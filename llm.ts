@@ -53,7 +53,7 @@ type OpenAIChunk = {
 function handleSSELine(
     data: string,
     toolCallBuffers: Map<number, { id: string; name: string; argsBuf: string }>,
-) : { textDelta: string | null; stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | 'aborted' | null } {
+) : { textDelta: string | null; stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | null } {
 
     let chunk: OpenAIChunk;
 
@@ -201,7 +201,25 @@ export async function* stream(
             while ((nlIndex = buffer.indexOf('\n')) >= 0) {
                 const line = buffer.slice(0, nlIndex).trim();
                 buffer = buffer.slice(nlIndex + 1);
-        }
-    }
+                if (line.startsWith('data: ')) continue;
 
+                const data = line.slice(6)
+                if (data === '[DONE]') continue;
+
+                const result = handleSSELine(data, toolCallBuffers);
+                if (result.textDelta) {
+                    yield { type: 'text_delta', delta: result.textDelta };
+                }
+                if (result.stopReason) {
+                    stopReason = result.stopReason;
+                }
+            }   
+        }
+    } catch (error) {
+        if (opts.signal?.aborted) {
+            yield { type: 'done', stopReason: 'aborted' };
+            return;
+        }
+        yield { type: 'error', error: error as Error }; return;
+    }
 }

@@ -1,3 +1,12 @@
+export type AgentTool = {
+    name: string
+    description: string
+    parameters: object
+    execute: (args: unknown, signal?: AbortSignal) => Promise<string>
+}
+
+
+
 export async function* runAgent(
     model: Model,
     context: Context,
