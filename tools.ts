@@ -12,7 +12,7 @@ const execAsync = promisify(exec)
 /** 工具输出截取上限（行数），超过则截取尾部并提示 */
 const MAX_OUTPUT_LINES = 200
 
-let truncateCount = 0
+let truncateCounter = 0
 
 /**
  * 截取工具输出：超过 maxLines 行时只保留尾部，完整输出存到临时文件。
@@ -26,7 +26,7 @@ async function truncateOutput(content: string, maxLines= MAX_OUTPUT_LINES): Prom
     const kept = lines.slice(-maxLines).join('\n');
     const tmpFile = path.join(os.tmpdir(), `nanopi-output-${process.pid}-${truncateCounter++}.txt`);
     await fs.writeFile(tmpFile, content, 'utf-8');
-    return `[output truncated: showing last ${maxLines} of ${lines.length} lines. full output: ${tmpPath}]\n${kept}`
+    return `[output truncated: showing last ${maxLines} of ${lines.length} lines. full output: ${tmpFile}]\n${kept}`
 }
 
 /** read_file：返回文件内容（截取尾部防止超大输出） */

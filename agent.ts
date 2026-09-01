@@ -32,7 +32,7 @@ export async function* runAgent(
     while (true) {
 
         let text = '';
-        let stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | null = null;
+        let stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | 'aborted' = 'end_turn';
         const toolCalls: { id: string; name: string; args: unknown}[] = [];
 
         for await (const ev of stream(model, context, {tools: toolDefs, signal})){

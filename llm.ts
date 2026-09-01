@@ -33,6 +33,48 @@ export type ToolDef = {
     parameters: object
 }
 
+export function contextToOpenAIMessages(context: Context): object[] {
+
+    const messages: object[] = [];
+    if (context.systemPrompt) {
+        messages.push({ role: 'system', content: context.systemPrompt });
+    }
+
+    for (const msg of context.message) {
+        if (typeof msg.content === 'string') {
+            messages.push({ role: msg.role, content: msg.content });
+            continue;
+        }
+
+        const blocks = msg.content;
+
+        if (msg.role === 'assistant') {
+            const toolCalls: object[] = [];
+            let text = '';
+            for (const block of blocks) {
+                if (block.type === 'text') {
+                    text += block.text;
+                } else if (block.type === 'tool_use') {
+                    toolCalls.push({ id: block.id, type: 'function', function: { name: block.name, arguments: JSON.stringify(block.input) } })
+                }
+            }
+            const content = text || (toolCalls.length ? null : '');
+            messages.push({ role: 'assistant', content, tool_calls: toolCalls.length ? toolCalls : undefined });
+        } else {
+            // user message 里的 tool_result block → OpenAI 要求独立的 role:tool 消息
+            for (const b of blocks) {
+                if (b.type === 'tool_result') {
+                messages.push({ role: 'tool', tool_call_id: b.tool_use_id, content: b.content })
+                } else if (b.type === 'text') {
+                messages.push({ role: 'user', content: b.text })
+                }
+            }
+        }
+    }
+
+    return messages;
+}
+
 /** OpenAIChunk SSE chunk 的最小类型 */
 type OpenAIChunk = {
     choices: Array<{
