@@ -223,3 +223,31 @@ export async function* stream(
         yield { type: 'error', error: error as Error }; return;
     }
 }
+
+export function buildAssistantMessage(
+    text: string,
+    toolCalls: { id: string; name: string; args: unknown }[]
+): Message {
+    const content: ContentBlock[] = [];
+    if (text) {
+        content.push({ type: 'text', text });
+    }
+    for (const tc of toolCalls) {
+        content.push({ type: 'tool_use', id: tc.id, name: tc.name, input: tc.args });
+    }
+    return { role: 'assistant', content };
+}
+
+
+export function buildToolResultMessage(
+    results: { tool_use_id: string; context: string }[]
+): Message {
+    return {
+        role: 'user',
+        content: results.map(r => ({
+            type: 'tool_result' as const,
+            tool_use_id: r.tool_use_id,
+            content: r.context
+        }))
+    };
+}
