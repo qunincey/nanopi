@@ -243,7 +243,7 @@ export async function* stream(
             while ((nlIndex = buffer.indexOf('\n')) >= 0) {
                 const line = buffer.slice(0, nlIndex).trim();
                 buffer = buffer.slice(nlIndex + 1);
-                if (line.startsWith('data: ')) continue;
+                if (!line.startsWith('data: ')) continue;
 
                 const data = line.slice(6)
                 if (data === '[DONE]') continue;
