@@ -11,7 +11,7 @@ export type AgentEvent =
     | { type: 'assistant_text'; delta: string }
     | { type: 'tool_call'; id: string; name: string; args: unknown }
     | { type: 'tool_result'; id: string; name: string; result: string }
-    | { type: 'turn_end'; stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | 'aborted'}
+    | { type: 'turn_end'; stopReason: 'end_turn' | 'tool_use' | 'max_tokens' | 'aborted' | 'error'}
 
 const COMPACT_THRESHOLD = 50
 const KEEP_RECENT = 20

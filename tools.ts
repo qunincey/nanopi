@@ -142,6 +142,6 @@ const runBash: AgentTool = {
     },
 }
 
-export function buildinTools(): AgentTool[] {
+export function builtinTools(): AgentTool[] {
     return [readFile, writeFile, edit, runBash];
 }   
